@@ -1,0 +1,165 @@
+# SentinelShield AI Security Platform - Development Docker Compose
+# Optimized for 8GB RAM laptop with hot reload
+version: '3.8'
+
+services:
+  # Main API Service (Development)
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: SentinelShield-api-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+asyncpg://SentinelShield:dev_password@postgres:5432/SentinelShield_dev
+      - REDIS_URL=redis://redis:6379/0
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev_secret_key_256bit}
+      - LOG_LEVEL=DEBUG
+      - MAX_REQUESTS_PER_MINUTE=1000
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - RELOAD=true
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+      - ./data:/app/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    networks:
+      - SentinelShield-network
+
+  # PostgreSQL Database (Development)
+  postgres:
+    image: postgres:15-alpine
+    container_name: SentinelShield-postgres-dev
+    environment:
+      - POSTGRES_DB=SentinelShield_dev
+      - POSTGRES_USER=SentinelShield
+      - POSTGRES_PASSWORD=dev_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    networks:
+      - SentinelShield-network
+
+  # Redis Cache (Development)
+  redis:
+    image: redis:7-alpine
+    container_name: SentinelShield-redis-dev
+    command: redis-server --maxmemory 1gb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    networks:
+      - SentinelShield-network
+
+  # Streamlit Dashboard (Development)
+  dashboard:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: SentinelShield-dashboard-dev
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://api:8000/api/v1
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_DEBUG=true
+    depends_on:
+      - api
+    volumes:
+      - ./app/dashboard:/app
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    networks:
+      - SentinelShield-network
+
+  # Redis Commander (Development Tool)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: SentinelShield-redis-commander
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - SentinelShield-network
+
+  # pgAdmin (Development Tool)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: SentinelShield-pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@SentinelShield.dev
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - SentinelShield-network
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  SentinelShield-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16

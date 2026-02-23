@@ -1,0 +1,17 @@
+# SENTINEL CORP - INTERNAL SECURITY POLICY
+Classification: INTERNAL CONFIDENTIAL
+
+## 1. Remote Access Policy
+All employees must use the Sentinel VPN to access internal resources. VPN sessions automatically timeout after 12 hours. Multi-Factor Authentication (MFA) via YubiKey is mandatory for all production database access.
+
+## 2. Password Requirements
+Passwords must be at least 16 characters long, containing upper, lower, numeric, and special characters. Passwords expire every 90 days. We do not allow the reuse of the last 10 passwords. 
+
+## 3. Incident Response Protocol
+In the event of a suspected data breach, employees must immediately contact the Security Operations Center (SOC) at soc-alerts@sentinel-corp.internal. Do NOT discuss potential breaches on public Slack channels.
+
+## 4. Source Code Management
+All code pushed to the main branch must require at least two approving reviews from senior engineers. Direct pushes to main are strictly prohibited. API keys and secrets must never be hardcoded; use the HashiCorp Vault infrastructure.
+
+## 5. Third-Party AI Tooling
+The use of public AI tools (like ChatGPT or Claude) for processing internal source code or customer data is strictly forbidden. Employees must use our internal, air-gapped Sentinel Shield AI for all code assistance to prevent data exfiltration.

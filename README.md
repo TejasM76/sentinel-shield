@@ -1,6 +1,6 @@
 # 🛡️ Sentinel Shield AI Security architecture
 
-Production-grade AI agent featuring a robust 4-Layer Threat Detection Pipeline, True Enterprise RAG, and a live SecOps Telemetry Dashboard.
+Enterprise-level AI agent featuring a robust 4-Layer Threat Detection Pipeline, True Enterprise RAG, and a live SecOps Telemetry Dashboard.
 
 ## 🚀 Features
 

@@ -10,7 +10,7 @@ from security_layer import scan_prompt, SecurityViolation, DB_PATH
 st.set_page_config(page_title="Sentinel Shield - Protected AI Agent", page_icon="🛡️", layout="centered")
 
 st.title("🛡️ Sentinel Shield AI")
-st.markdown("**Production-grade SecOps for your Agentic RAG System.**")
+st.markdown("**Enterprise-level SecOps for your Agentic RAG System.**")
 
 if not check_environment():
     st.error("Environment check failed! Please ensure Ollama is running and `.env` has `TAVILY_API_KEY`.")
